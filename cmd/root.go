@@ -3,10 +3,14 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
+	"github.com/danielkvist/todots/pkg/copier"
 )
 
 var (
@@ -22,10 +26,29 @@ var rootCmd = &cobra.Command{
 It basically copies in the directory that you specify all the files or directories that you have defined in the .todots file on your Home directory.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if dstRoute == "" {
-			return fmt.Errorf("No destination route provided")
+			return fmt.Errorf("no destination route provided")
 		}
 
-		fmt.Println(viper.AllKeys())
+		var err error
+		if !filepath.IsAbs(dstRoute) {
+			dstRoute, err = filepath.Abs(dstRoute)
+			if err != nil {
+				return fmt.Errorf("while making the destination route absolute: %v", err)
+			}
+		}
+
+		dst := dstRoute
+		if ok := strings.HasSuffix(dstRoute, "/"); !ok {
+			dst += "/"
+		}
+
+		for _, k := range viper.AllKeys() {
+			err := copier.Copy(fmt.Sprintf("%s", viper.Get(k)), dst+k+"/")
+			if err != nil {
+				return fmt.Errorf("%v", err)
+			}
+		}
+
 		return nil
 	},
 }
