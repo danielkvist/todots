@@ -10,10 +10,11 @@ import (
 // Copy receives a source file and a destination folder and tries
 // to make a copy of the source file on a subfolder inside the destination
 // folder. If there is any error, it returns it.
+// If the source is a directory it reads all the entries and calls itself recursively.
 func Copy(src, dst string) error {
 	f, err := os.Open(src)
 	if err != nil {
-		return fmt.Errorf("%v", err)
+		return fmt.Errorf("while opening %q: %v", src, err)
 	}
 	defer f.Close()
 
@@ -22,10 +23,22 @@ func Copy(src, dst string) error {
 		return fmt.Errorf("%v", err)
 	}
 
-	// TODO: Work with directories too
-	// 			Or with multiple entries in the .yaml file
 	if !fi.Mode().IsRegular() {
-		return fmt.Errorf("%q is not a regular file", fi.Name())
+		if !fi.IsDir() {
+			return fmt.Errorf("%q is not a regular file", fi.Name())
+		}
+
+		entries, err := f.Readdir(0)
+		if err != nil {
+			return fmt.Errorf("while reading %q: %v", f.Name(), err)
+		}
+
+		for _, entry := range entries {
+			// TODO: Add concurrency
+			Copy(src+entry.Name(), dst)
+		}
+
+		return nil
 	}
 
 	_, err = os.Stat(dst)
