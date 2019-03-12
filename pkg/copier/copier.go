@@ -34,7 +34,6 @@ func Copy(src, dst string) error {
 		}
 
 		for _, entry := range entries {
-			// TODO: Add concurrency
 			Copy(src+entry.Name(), dst)
 		}
 

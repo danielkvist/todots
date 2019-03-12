@@ -43,7 +43,19 @@ It basically copies in the directory that you specify all the files or directori
 		}
 
 		for _, k := range viper.AllKeys() {
-			err := copier.Copy(fmt.Sprintf("%s", viper.Get(k)), dst+k+"/")
+			item := fmt.Sprintf("%s", viper.Get(k))
+			dst += k + "/"
+
+			if ok := strings.HasPrefix(item, "["); ok {
+				itemSlice := strings.Fields(strings.Trim(item, "[]"))
+
+				for _, i := range itemSlice {
+					err = copier.Copy(i, dst)
+				}
+			} else {
+				err = copier.Copy(item, dst)
+			}
+
 			if err != nil {
 				return fmt.Errorf("%v", err)
 			}
