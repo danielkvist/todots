@@ -3,14 +3,13 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/danielkvist/todots/pkg/copier"
+	"github.com/danielkvist/todots/pkg/cloner"
 )
 
 var (
@@ -26,38 +25,19 @@ var rootCmd = &cobra.Command{
 It basically copies in the directory that you specify all the files or directories that you have defined in the .todots file on your Home directory.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if dstRoute == "" {
-			return fmt.Errorf("no destination route provided")
+			return fmt.Errorf("destination route not defined")
 		}
 
-		var err error
-		if !filepath.IsAbs(dstRoute) {
-			dstRoute, err = filepath.Abs(dstRoute)
-			if err != nil {
-				return fmt.Errorf("while making the destination route absolute: %v", err)
-			}
-		}
-
-		dst := dstRoute
-		if ok := strings.HasSuffix(dstRoute, "/"); !ok {
-			dst += "/"
-		}
-
-		for _, k := range viper.AllKeys() {
-			item := fmt.Sprintf("%s", viper.Get(k))
-			dst += k + "/"
-
-			if ok := strings.HasPrefix(item, "["); ok {
-				itemSlice := strings.Fields(strings.Trim(item, "[]"))
-
-				for _, i := range itemSlice {
-					err = copier.Copy(i, dst)
-				}
-			} else {
-				err = copier.Copy(item, dst)
+		for k, v := range viper.AllSettings() {
+			v := fmt.Sprintf("%s", v)
+			finalDst := dstRoute
+			if ok := strings.HasSuffix(finalDst, "/"); !ok {
+				finalDst += "/"
 			}
 
-			if err != nil {
-				return fmt.Errorf("%v", err)
+			finalDst += k + "/"
+			if err := cloner.Clone(v, finalDst); err != nil {
+				return err
 			}
 		}
 
