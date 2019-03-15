@@ -10,8 +10,6 @@ You only need to type the following command in your terminal:
 $ go get -u github.com/danielkvist/todots
 ```
 
-> You may need to fix your \$PATH before use todots.
-
 ## Usage
 
 ```bash
@@ -26,7 +24,7 @@ However you can specify another file using the `--config` flag
 todots --config myconfig.yml --dst .
 ```
 
-As you can see you always have to specify the destination route
+> You always have to specify the destination route
 
 ## Configuration file
 
@@ -37,9 +35,7 @@ Here's an example of what your configuration file should look like:
 
 vim: /home/user/.vimrc
 i3: /home/user/.config/i3/
-newsboat:
-  - /home/user/.newsboat/urls
-  - /home/user/.newsboat/config
+newsboat: /home/user/.newsboat/
 tmux: /home/user/.tmux.conf
 ```
 
