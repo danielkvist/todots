@@ -16,6 +16,10 @@ func verify(file string) (os.FileInfo, error) {
 		return nil, fmt.Errorf("while reading %q: %v", fi.Name(), err)
 	}
 
+	if !fi.Mode().IsRegular() && !fi.Mode().IsDir() {
+		return nil, fmt.Errorf("there is a problem with the file permissions for %q (%v)", fi.Name(), fi.Mode())
+	}
+
 	return fi, nil
 }
 
