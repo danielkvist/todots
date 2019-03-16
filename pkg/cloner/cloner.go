@@ -1,3 +1,5 @@
+// Package cloner in an utility to clone files verifying its integrity
+// and permissions or to clone directories recursively.
 package cloner
 
 import (
@@ -6,6 +8,8 @@ import (
 	"os"
 )
 
+// verify checks things like if a file or a directory exists or, in the case of a
+// file, if it has the correct permissions.
 func verify(file string) (os.FileInfo, error) {
 	fi, err := os.Stat(file)
 	if err != nil {
@@ -23,6 +27,8 @@ func verify(file string) (os.FileInfo, error) {
 	return fi, nil
 }
 
+// createDir tries to create a new directory. If doesn't return an error if the directory
+// already existed.
 func createDir(dst string) (os.FileInfo, error) {
 	_, err := verify(dst)
 	if err != nil {
@@ -44,6 +50,10 @@ func createDir(dst string) (os.FileInfo, error) {
 	return di, nil
 }
 
+// Clone receives a source (file or directory) and a destination path
+// and after it verifies the source, clones it into the destination path.
+// If the source is a directory, it clones it recursively.
+// If there is any error it returns an error.
 func Clone(src, dst string) error {
 	si, err := verify(src)
 	if err != nil {
