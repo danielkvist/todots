@@ -14,6 +14,10 @@ $ go get -u github.com/danielkvist/todots
 
 ```bash
 todots --dst .
+
+# Or
+
+todots
 ```
 
 todots by default looks for a configuration file that should be on your \$HOME directory called .todots.yaml or .todots.yml.
@@ -33,10 +37,10 @@ Here's an example of what your configuration file should look like:
 ```yaml
 # Change user for your username
 
-vim: /home/user/.vimrc
-i3: /home/user/.config/i3/
-newsboat: /home/user/.newsboat/
-tmux: /home/user/.tmux.conf
+vim: /home/<user>/.vimrc
+i3: /home/<user>/.config/i3/
+newsboat: /home/<user>/.newsboat/
+tmux: /home/<user>/.tmux.conf
 ```
 
 As you can see you have to specify the absolute path. And you can specify a file or a directory.
