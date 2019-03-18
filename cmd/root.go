@@ -25,7 +25,7 @@ var rootCmd = &cobra.Command{
 It basically copies in the directory that you specify all the files or directories that you have defined in the .todots file on your Home directory.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if dstRoute == "" {
-			return fmt.Errorf("destination route not defined")
+			dstRoute = "."
 		}
 
 		for k, v := range viper.AllSettings() {
