@@ -22,7 +22,7 @@ var rootCmd = &cobra.Command{
 	Short: "todots is a very simple CLI that helps you to easily have a copy of all of your dotfiles",
 	Long: `todots is a very simple CLI that helps you to easily have a copy of all of your dotfiles.
 	
-It basically copies in the directory that you specify all the files or directories that you have defined in the .todots file on your Home directory.`,
+It makes a copy in the directory that you specifed of all of your files or routes specified on a config file in YAML format.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if dstRoute == "" {
 			dstRoute = "."

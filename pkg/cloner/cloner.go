@@ -1,5 +1,4 @@
-// Package cloner in an utility to clone files verifying its integrity
-// and permissions or to clone directories recursively.
+// Package cloner is an utility to clone files or directories recursively.
 package cloner
 
 import (
