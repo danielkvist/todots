@@ -51,6 +51,7 @@ var RootCmd = &cobra.Command{
 			if err != nil {
 				return fmt.Errorf("while creating destination file %q on %q: %v", fileName, dstPath, err)
 			}
+			defer df.Close()
 
 			if _, err := dotFile.WriteTo(df); err != nil {
 				return fmt.Errorf("while copying data from %q to destination file on %q: %v", sf.Name(), fileName, err)
@@ -70,7 +71,7 @@ var RootCmd = &cobra.Command{
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "$HOME/.todots.yaml", "config file")
+	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default $HOME/.todots.yaml)")
 	RootCmd.PersistentFlags().StringVar(&dstDir, "dst", ".", "destination directory")
 }
 
