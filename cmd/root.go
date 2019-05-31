@@ -1,62 +1,77 @@
 package cmd
 
 import (
+	"bufio"
 	"fmt"
 	"os"
-	"strings"
+	"path/filepath"
+
+	"github.com/danielkvist/todots/copier"
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-
-	"github.com/danielkvist/todots/pkg/cloner"
 )
 
 var (
-	cfgFile  string
-	dstRoute string
+	cfgFile string
+	dstDir  string
 )
 
-var rootCmd = &cobra.Command{
+var RootCmd = &cobra.Command{
 	Use:   "todots",
-	Short: "todots is a very simple CLI that helps you to easily have a copy of all of your dotfiles",
-	Long: `todots is a very simple CLI that helps you to easily have a copy of all of your dotfiles.
-	
-It makes a copy in the directory that you specifed of all of your files or routes specified on a config file in YAML format.`,
+	Short: "todots is a simple CLI writen in Go to make a copy of your dotfiles.",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if dstRoute == "" {
-			dstRoute = "."
-		}
-
 		for k, v := range viper.AllSettings() {
-			v := fmt.Sprintf("%s", v)
-			finalDst := dstRoute
-			if ok := strings.HasSuffix(finalDst, "/"); !ok {
-				finalDst += "/"
+			home, err := homedir.Dir()
+			if err != nil {
+				return fmt.Errorf("while trying to determine the HOME directory: %v", err)
 			}
 
-			finalDst += k + "/"
-			if err := cloner.Clone(v, finalDst); err != nil {
-				return err
+			srcPath := home + "/" + v.(string)
+			if err := copier.Check(srcPath); err != nil {
+				return fmt.Errorf("while checking source path %q: %v", srcPath, err)
 			}
+
+			dotFile := copier.NewDotfile(k)
+			sf, err := os.Open(srcPath)
+			if err != nil {
+				return fmt.Errorf("while opening file on path %q: %v", srcPath, err)
+			}
+			defer sf.Close()
+
+			r := bufio.NewReader(sf)
+			if err := dotFile.CopyFrom(r); err != nil {
+				return fmt.Errorf("while copying data from file %q: %v", sf.Name(), err)
+			}
+
+			_, fileName := filepath.Split(srcPath)
+			dstPath := dstDir + "/" + fileName
+			df, err := os.Create(dstPath)
+			if err != nil {
+				return fmt.Errorf("while creating destination file %q on %q: %v", fileName, dstPath, err)
+			}
+
+			if _, err := dotFile.WriteTo(df); err != nil {
+				return fmt.Errorf("while copying data from %q to destination file on %q: %v", sf.Name(), fileName, err)
+			}
+
+			if err := copier.Check(dstPath); err != nil {
+				return fmt.Errorf("while checking destination path %q: %v", dstPath, err)
+			}
+
+			fmt.Printf("copy of %q successfully created.\n", fileName)
 		}
 
 		return nil
 	},
 }
 
-func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-}
-
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.todots.yaml)")
-	rootCmd.PersistentFlags().StringVar(&dstRoute, "dst", "", "destination route")
+	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "$HOME/.todots.yaml", "config file")
+	RootCmd.PersistentFlags().StringVar(&dstDir, "dst", ".", "destination directory")
 }
 
 func initConfig() {

@@ -1,7 +1,13 @@
 package main
 
-import "github.com/danielkvist/todots/cmd"
+import (
+	"log"
+
+	"github.com/danielkvist/todots/cmd"
+)
 
 func main() {
-	cmd.Execute()
+	if err := cmd.RootCmd.Execute(); err != nil {
+		log.Fatalf("%v", err)
+	}
 }
